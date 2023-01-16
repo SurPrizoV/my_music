@@ -6,13 +6,12 @@ import Search from './content-block/Search'
 import FilterTrack from './content-block/FilterTrack'
 import TracksTitle from './content-block/TracksTitle'
 import watch from '../img/sprite.svg'
-import SkeletonTrack from './content-block/SkeletonTrack'
 import * as Styled from './styles/content-block-styles'
 import { StyledTrackTimeIcon } from './content-block/styles/track-styles'
 import { setCurrentSongs } from '../../redux/slices/playerSlice'
 import Playlist from './content-block/Playlist'
 
-function ContentBlock({ title = 'Треки', tracks, isLoading }) {
+function ContentBlock({ title = 'Треки', endpointHook }) {
   const dispatch = useDispatch()
 
   // Нужно для логики nextTrack и prevTrack
@@ -26,13 +25,17 @@ function ContentBlock({ title = 'Треки', tracks, isLoading }) {
       <Styled.Title>{title}</Styled.Title>
       <Styled.FilterBlock className="filter">
         <Styled.FilterHeader>Искать по:</Styled.FilterHeader>
-        <FilterTrack filter="исполнителю" items={tracks} filterName="author" />
+        <FilterTrack
+          filter="исполнителю"
+          items={endpointHook}
+          filterName="author"
+        />
         <FilterTrack
           filter="году выпуска"
-          items={tracks}
+          items={endpointHook}
           filterName="release_date"
         />
-        <FilterTrack filter="жанру" items={tracks} filterName="genre" />
+        <FilterTrack filter="жанру" items={endpointHook} filterName="genre" />
       </Styled.FilterBlock>
       <Styled.CenterBlockContent>
         <Styled.ContentTitles>
@@ -47,20 +50,7 @@ function ContentBlock({ title = 'Треки', tracks, isLoading }) {
             }
           />
         </Styled.ContentTitles>
-        {isLoading ? (
-          <>
-            {' Loading tracks...'}
-            <Styled.SkeletonWrapper>
-              {Array.from({ length: 5 }, (_v, k) => (
-                <SkeletonTrack key={k} />
-              ))}
-            </Styled.SkeletonWrapper>
-          </>
-        ) : tracks?.length ? (
-          <Playlist tracks={tracks} />
-        ) : (
-          <>No tracks published </>
-        )}
+        <Playlist endpointHook={endpointHook} />
       </Styled.CenterBlockContent>
     </Styled.CenterBlock>
   )

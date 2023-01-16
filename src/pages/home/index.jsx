@@ -7,14 +7,14 @@ import { useThemeContext } from '../../context/theme'
 import { useGetAllTracksQuery } from '../../redux/services/tracks'
 
 function Home() {
-  const { data, isLoading } = useGetAllTracksQuery()
+  // const { data, isLoading } = useGetAllTracksQuery()
   const { theme } = useThemeContext()
 
   return (
     <Styled.Container theme={theme}>
       <Styled.Main>
         <Nav />
-        <ContentBlock tracks={data} isLoading={isLoading} />
+        <ContentBlock endpointHook={useGetAllTracksQuery()} />
         <SideBar />
       </Styled.Main>
     </Styled.Container>

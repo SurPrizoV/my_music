@@ -41,10 +41,3 @@ export const ContentTitles = styled.div`
   justify-content: space-between;
   margin-bottom: 24px;
 `
-
-export const SkeletonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  gap: 12px 0;
-`

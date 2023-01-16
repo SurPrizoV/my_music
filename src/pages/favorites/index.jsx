@@ -6,13 +6,13 @@ import ContentBlock from '../../components/main/ContentBlock'
 import { useGetAllTracksQuery } from '../../redux/services/tracks'
 
 function Favorites() {
-  const { data, isLoading } = useGetAllTracksQuery()
+  // const { data, isLoading } = useGetAllTracksQuery()
 
   return (
     <Styled.Container>
       <Styled.Main>
         <Nav />
-        <ContentBlock title="Мои треки" tracks={data} isLoading={isLoading} />
+        <ContentBlock title="Мои треки" endpointHook={useGetAllTracksQuery()} />
       </Styled.Main>
     </Styled.Container>
   )

@@ -7,13 +7,13 @@ import { useGetSelectionQuery } from '../../redux/services/tracks'
 
 function SelectionPlaylist() {
   const { id } = useParams()
-  const { data, isLoading } = useGetSelectionQuery(id)
+  // const { data, isLoading } = useGetSelectionQuery(id)
 
   return (
     <Styled.Container>
       <Styled.Main>
         <Nav />
-        <ContentBlock tracks={data?.items} isLoading={isLoading} />
+        <ContentBlock endpointHook={useGetSelectionQuery(id)} />
       </Styled.Main>
     </Styled.Container>
   )

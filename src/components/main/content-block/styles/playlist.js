@@ -5,3 +5,9 @@ export const PlaylistWrapper = styled.div`
   flex-direction: column;
   overflow-y: auto;
 `
+export const SkeletonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 12px 0;
+`

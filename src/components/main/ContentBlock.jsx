@@ -11,12 +11,12 @@ import { StyledTrackTimeIcon } from './content-block/styles/track-styles'
 import { setCurrentSongs } from '../../redux/slices/playerSlice'
 import Playlist from './content-block/Playlist'
 
-function ContentBlock({ title = 'Треки', endpointHook }) {
+function ContentBlock({ title = 'Треки', response }) {
   const dispatch = useDispatch()
 
   // Нужно для логики nextTrack и prevTrack
   useEffect(() => {
-    dispatch(setCurrentSongs(tracks))
+    dispatch(setCurrentSongs(response.data))
   }, [])
 
   return (
@@ -27,15 +27,15 @@ function ContentBlock({ title = 'Треки', endpointHook }) {
         <Styled.FilterHeader>Искать по:</Styled.FilterHeader>
         <FilterTrack
           filter="исполнителю"
-          items={endpointHook}
+          items={response.data}
           filterName="author"
         />
         <FilterTrack
           filter="году выпуска"
-          items={endpointHook}
+          items={response.data}
           filterName="release_date"
         />
-        <FilterTrack filter="жанру" items={endpointHook} filterName="genre" />
+        <FilterTrack filter="жанру" items={response.data} filterName="genre" />
       </Styled.FilterBlock>
       <Styled.CenterBlockContent>
         <Styled.ContentTitles>
@@ -50,7 +50,11 @@ function ContentBlock({ title = 'Треки', endpointHook }) {
             }
           />
         </Styled.ContentTitles>
-        <Playlist endpointHook={endpointHook} />
+        <Playlist
+          data={response.data}
+          error={response.error}
+          isLoading={response.isLoading}
+        />
       </Styled.CenterBlockContent>
     </Styled.CenterBlock>
   )

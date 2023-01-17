@@ -1,12 +1,11 @@
+/* eslint-disable jsx-a11y/aria-role */
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react'
 import * as Styled from './styles/playlist'
 import Track from './Track'
 import SkeletonTrack from './SkeletonTrack'
 
-function Playlist({ endpointHook }) {
-  const { data, error, isLoading } = endpointHook
-
+function Playlist({ data, error, isLoading }) {
   const isEmptyList = !isLoading && !data?.length
 
   if (isLoading) {

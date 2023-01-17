@@ -3,20 +3,18 @@
 import React, { useState } from 'react'
 import * as Styled from './styles/filter-track-styles'
 
-function FilterTrack({ filter, endpointHook, filterName }) {
-  const { data } = endpointHook
-
+function FilterTrack({ filter, tracks, filterName }) {
   const [active, setActive] = useState(false)
   const [filterCase, setFilter] = useState([])
 
   function chosenFilter() {
     setActive(!active)
     if (filterName === 'author') {
-      setFilter([...new Set(data.map((item) => item.author))])
+      setFilter([...new Set(tracks.map((item) => item.author))])
     } else if (filterName === 'genre') {
-      setFilter([...new Set(data.map((item) => item.genre))])
+      setFilter([...new Set(tracks.map((item) => item.genre))])
     } else if (filterName === 'release_date') {
-      setFilter([...new Set(data.map((item) => item.release_date))])
+      setFilter([...new Set(tracks.map((item) => item.release_date))])
     }
   }
 

@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<BarElement /> Snapshots tests should render "play bar element" successfully and match snapshot 1`] = `
+<div>
+  <div
+    class="sc-csuSiG cTjzTl"
+  >
+    <svg
+      class="sc-eDWCr hevNYN"
+    >
+      <use
+        xlink:href="sprite.svg#icon-undefined"
+      />
+    </svg>
+  </div>
+</div>
+`;

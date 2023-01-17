@@ -1,22 +1,22 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import Search from './content-block/Search'
 import FilterTrack from './content-block/FilterTrack'
 import TracksTitle from './content-block/TracksTitle'
-import Track from './content-block/Track'
 import watch from '../img/sprite.svg'
-import SkeletonTrack from './content-block/SkeletonTrack'
 import * as Styled from './styles/content-block-styles'
 import { StyledTrackTimeIcon } from './content-block/styles/track-styles'
 import { setCurrentSongs } from '../../redux/slices/playerSlice'
+import Playlist from './content-block/Playlist'
 
-function ContentBlock({ title = 'Треки', tracks, isLoading }) {
+function ContentBlock({ title = 'Треки', response }) {
   const dispatch = useDispatch()
 
   // Нужно для логики nextTrack и prevTrack
   useEffect(() => {
-    dispatch(setCurrentSongs(tracks))
+    dispatch(setCurrentSongs(response.data))
   }, [])
 
   return (
@@ -25,13 +25,17 @@ function ContentBlock({ title = 'Треки', tracks, isLoading }) {
       <Styled.Title>{title}</Styled.Title>
       <Styled.FilterBlock className="filter">
         <Styled.FilterHeader>Искать по:</Styled.FilterHeader>
-        <FilterTrack filter="исполнителю" items={tracks} filterName="author" />
+        <FilterTrack
+          filter="исполнителю"
+          items={response.data}
+          filterName="author"
+        />
         <FilterTrack
           filter="году выпуска"
-          items={tracks}
+          items={response.data}
           filterName="release_date"
         />
-        <FilterTrack filter="жанру" items={tracks} filterName="genre" />
+        <FilterTrack filter="жанру" items={response.data} filterName="genre" />
       </Styled.FilterBlock>
       <Styled.CenterBlockContent>
         <Styled.ContentTitles>
@@ -46,19 +50,11 @@ function ContentBlock({ title = 'Треки', tracks, isLoading }) {
             }
           />
         </Styled.ContentTitles>
-        {isLoading ? (
-          <Styled.SkeletonWrapper>
-            {Array.from({ length: 5 }, (v, k) => (
-              <SkeletonTrack key={k} />
-            ))}
-          </Styled.SkeletonWrapper>
-        ) : (
-          <Styled.Playlist>
-            {tracks.map((track) => (
-              <Track key={track.id} {...track} />
-            ))}
-          </Styled.Playlist>
-        )}
+        <Playlist
+          data={response.data}
+          error={response.error}
+          isLoading={response.isLoading}
+        />
       </Styled.CenterBlockContent>
     </Styled.CenterBlock>
   )

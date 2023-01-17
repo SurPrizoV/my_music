@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/aria-role */
 /* eslint-disable camelcase */
 import React from 'react'
 import { useDispatch } from 'react-redux'
@@ -34,7 +35,7 @@ function Track({
   }
 
   return (
-    <Styled.TrackItem onClick={handleSetTrack}>
+    <Styled.TrackItem onClick={handleSetTrack} role="track">
       <Styled.TrackWrapper>
         <TrackTitle title={name} />
         <TrackAuthor author={author} />

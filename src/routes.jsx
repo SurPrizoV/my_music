@@ -5,7 +5,7 @@ import Registration from './pages/auth/Registration'
 import Home from './pages/home'
 import Favorites from './pages/favorites'
 import NotFound from './pages/not-found'
-import Playlist from './pages/selections'
+import SelectionPlaylist from './pages/selections'
 import ProtectedRoute from './components/protected-route/ProtectedRoute'
 import * as Styled from './styles'
 
@@ -26,7 +26,7 @@ function AppRoutes() {
             }
           />
           <Route path="/favorites" element={<Favorites />} />
-          <Route path="/playlist/:id" element={<Playlist />} />
+          <Route path="/playlist/:id" element={<SelectionPlaylist />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

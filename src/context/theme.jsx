@@ -1,4 +1,5 @@
-import React, { useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
+import { ThemeProvider } from 'styled-components'
 
 export const themes = {
   light: {
@@ -17,6 +18,30 @@ export const ThemeContext = React.createContext({
   theme: themes.dark,
   toggleTheme: () => {},
 })
+
+export function ThemeContextProvider({ children }) {
+  const [currentTheme, setCurrentTheme] = useState(themes.dark)
+
+  const toggleTheme = () => {
+    if (currentTheme === themes.dark) {
+      setCurrentTheme(themes.light)
+      return
+    }
+
+    setCurrentTheme(themes.dark)
+  }
+
+  const themeContextMemo = useMemo(
+    () => ({ themeContext: currentTheme, toggleTheme }),
+    [currentTheme, toggleTheme]
+  )
+
+  return (
+    <ThemeContext.Provider value={themeContextMemo}>
+      <ThemeProvider theme={themeContextMemo}>{children}</ThemeProvider>
+    </ThemeContext.Provider>
+  )
+}
 
 export const useThemeContext = () => {
   const theme = useContext(ThemeContext)

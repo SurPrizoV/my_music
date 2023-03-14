@@ -1,152 +1,231 @@
-/* eslint-disable no-unused-expressions */
-import React, { useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import BarElement from './BarElement'
-import TrackPlayContain from './track-play/TrackPlayContain'
-import sprite from '../img/sprite.svg'
-import TrackPlayLike from './track-play/TrackPlayLike'
-import * as Styled from './styles/bar-styles'
+import { useSelector, useDispatch } from 'react-redux';
+import { useRef, useState, useEffect } from 'react';
+import {
+  useGetTrackByIdQuery,
+  useAddTrackInFavoriteMutation,
+  useRemoveTrackFromFavoriteMutation,
+} from '../../services/track';
+import { setTrackId } from '../../store/slices/trackSlice';
+import PlayerControls from '../playerControls/PlayerControls';
+import TrackPlayerContain from '../trackPlayerContain/TrackPlayerContain';
+import LikeDislike from '../likeDislike/LikeDislike';
+import Volume from '../volume/Volume';
+import SkeletonPlayerContain from '../skeletons/skeletonPlayerContain/SkeletonPlayerContain';
+import s from './Bar.module.css';
+/* eslint-disable jsx-a11y/media-has-caption */
 
-function Bar() {
-  const { currentSongs, activeSong, isActive } = useSelector(
-    (state) => state.player
-  )
-  const [isPlaying, setPlaying] = useState(false)
-  const [progressValue, setProgressValue] = useState(0)
-  const [volume, setVolume] = useState(0.3)
-  const [repeat, setRepeat] = useState(false)
-  const [shuffle, setShuffle] = useState(false)
+export default function Bar() {
+  const { source, trackId, favorite, allTracksId } = useSelector(
+    (state) => state.track
+  );
+  const [songsId, setSongsId] = useState([]);
+  const [trackIndex, setTrackIndex] = useState(0);
+  const [isPlay, setIsPlay] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isRepeat, setIsRepeat] = useState(false);
+  const [isShuffle, setIsShuffle] = useState(false);
+  const { data, isLoading } = useGetTrackByIdQuery({ trackId });
+  const [addTrackInFavorite] = useAddTrackInFavoriteMutation();
+  const [removeTrackFromFavorite] = useRemoveTrackFromFavoriteMutation();
+  const audio = useRef(new Audio(source));
+  const isReady = useRef(false);
+  const intervalRef = useRef();
+  const dispatch = useDispatch();
 
-  const audioRef = useRef(new Audio(activeSong.track_file))
-  audioRef.current.preload = 'metadata'
+  const { duration } = audio.current || 0;
 
-  useEffect(() => {
-    setPlaying(true)
-    if (activeSong.track_file) {
-      audioRef.current.pause()
-      audioRef.current = new Audio(activeSong.track_file)
-      audioRef.current.play()
-    } else audioRef.current = new Audio(activeSong.track_file)
-  }, [activeSong.track_file])
+  const currentPercentage = duration ? `${(progress / duration) * 100}%` : '0%';
+  const trackStyling = `
+  -webkit-gradient(linear, 0% 0%, 100% 0%, color-stop(${currentPercentage}, #B672FF), color-stop(${currentPercentage}, var(--background-progress)))
+`;
 
-  const musicProgress = () => {
-    const progress =
-      Math.floor(audioRef.current.currentTime) /
-      (Math.floor(audioRef.current.duration) / 100)
-    setProgressValue(progress)
-  }
-
-  useEffect(() => {
-    isPlaying ? audioRef.current.play() : audioRef.current.pause()
-    audioRef.current.addEventListener('timeupdate', musicProgress)
-  }, [isPlaying])
-
-  useEffect(() => {
-    audioRef.current.addEventListener('ended', () => setPlaying(false))
-    return () => {
-      audioRef.current.removeEventListener('ended', () => setPlaying(false))
+  const togglePlay = () => setIsPlay(!isPlay);
+  const toggleRepeat = () => setIsRepeat(!isRepeat);
+  const toggleShuffle = () => {
+    setIsShuffle(!isShuffle);
+    if (!isShuffle) {
+      setSongsId(
+        allTracksId.slice().sort(() => Math.round(Math.random() * 100) - 50)
+      );
+    } else {
+      setSongsId(allTracksId);
     }
-  }, [])
+  };
+
+  const handleAddFavorite = () => {
+    addTrackInFavorite({
+      id: trackId,
+    });
+    dispatch(setTrackId({ favorite: true }));
+  };
+
+  const handleRemoveFavorite = () => {
+    removeTrackFromFavorite({
+      id: trackId,
+    });
+    dispatch(setTrackId({ favorite: false }));
+  };
+
+  const toPrevTrack = () => {
+    if (trackIndex - 1 < 0) {
+      return;
+    }
+    setTrackIndex(trackIndex - 1);
+    dispatch(
+      setTrackId({
+        trackId: songsId[trackIndex - 1],
+      })
+    );
+  };
+
+  const toNextTrack = () => {
+    if (trackIndex < songsId.length - 1) {
+      setTrackIndex(trackIndex + 1);
+      dispatch(
+        setTrackId({
+          trackId: songsId[trackIndex + 1],
+        })
+      );
+    } else {
+      setTrackIndex(0);
+      dispatch(
+        setTrackId({
+          trackId: songsId[0],
+        })
+      );
+    }
+  };
+
+  const startTimer = () => {
+    clearInterval(intervalRef.current);
+    if (source) {
+      intervalRef.current = setInterval(() => {
+        if (audio.current.ended) {
+          if (isRepeat) {
+            audio.current.pause();
+            audio.current = new Audio(data.track_file);
+            setProgress(audio.current.currentTime);
+            if (isReady.current) {
+              audio.current.play();
+              setIsPlay(true);
+              startTimer();
+            } else {
+              isReady.current = true;
+            }
+          } else {
+            toNextTrack();
+          }
+        } else {
+          setProgress(audio.current.currentTime);
+        }
+      }, [1000]);
+    }
+  };
+
+  const onScrub = (value) => {
+    clearInterval(intervalRef.current);
+    audio.current.currentTime = value;
+    setProgress(audio.current.currentTime);
+  };
+
+  const onScrubEnd = () => {
+    if (!isPlay) {
+      setIsPlay(true);
+    }
+    startTimer();
+  };
 
   useEffect(() => {
-    audioRef.current.volume = volume
-  }, [volume])
+    setSongsId(allTracksId);
+  }, [allTracksId]);
 
   useEffect(() => {
-    audioRef.current.loop = repeat
-  }, [repeat])
+    if (isPlay) {
+      audio.current.play();
+    } else {
+      audio.current.pause();
+    }
+  }, [isPlay]);
 
-  const handlePlayPause = () => {
-    if (!isActive) return
-    setPlaying(!isPlaying)
-  }
+  useEffect(
+    () => () => {
+      audio.current.pause();
+      clearInterval(intervalRef.current);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!isLoading) {
+      setTrackIndex(songsId.indexOf(trackId));
+      dispatch(
+        setTrackId({
+          source: data.track_file,
+          favorite: data.stared_user.filter((user) => user.id === Number(192))
+            .length,
+        })
+      );
+      audio.current.pause();
+      audio.current = new Audio(data.track_file);
+      setProgress(audio.current.currentTime);
+    }
+
+    if (isReady.current) {
+      audio.current.play();
+      setIsPlay(true);
+      startTimer();
+    } else {
+      isReady.current = true;
+    }
+  }, [data]);
 
   return (
-    isActive && (
-      <Styled.BarWrapper>
-        <Styled.BarContent>
-          <Styled.ProgressBar value={progressValue} max="100" />
-          <Styled.BarPlayerBlock>
-            <Styled.BarPlayer>
-              <Styled.BarControls>
-                <BarElement
-                  marginRight="23px"
-                  widthSvg="15px"
-                  heightSvg="14px"
-                  el="prev"
-                  alt="prev"
+    <div className={s.bar}>
+      <div className={s.content}>
+        <input
+          className={s.progressLine}
+          type="range"
+          value={progress}
+          step="1"
+          min="0"
+          max={duration || `${duration}`}
+          onChange={(e) => onScrub(e.target.value)}
+          onMouseUp={onScrubEnd}
+          onKeyUp={onScrubEnd}
+          style={{ background: trackStyling }}
+        />
+        <div className={s.block}>
+          <div className={s.player}>
+            <PlayerControls
+              onPlayPauseClick={togglePlay}
+              onPrevClick={toPrevTrack}
+              onNextClick={toNextTrack}
+              onRepeatClick={toggleRepeat}
+              onShuffleClick={toggleShuffle}
+              isPlay={isPlay}
+              isRepeat={isRepeat}
+              isShuffle={isShuffle}
+            />
+            <div className={s.track__play}>
+              {isLoading ? (
+                <SkeletonPlayerContain />
+              ) : (
+                <TrackPlayerContain
+                  title={data.name || ''}
+                  author={data.author || ''}
                 />
-                <BarElement
-                  marginRight="23px"
-                  widthSvg="22px"
-                  heightSvg="20px"
-                  fillSvg="#d9d9d9"
-                  el="play"
-                  alt="play"
-                  onClick={handlePlayPause}
-                />
-                <div> {isPlaying ? 'pause' : 'play'} </div>
+              )}
 
-                <BarElement
-                  marginRight="28px"
-                  fill="#a53939"
-                  widthSvg="15px"
-                  heightSvg="14px"
-                  fillSvg="inherit"
-                  strokeSvg="#d9d9d9"
-                  el="next"
-                  alt="next"
-                />
-                <BarElement
-                  marginRight="24px"
-                  widthSvg="18px"
-                  heightSvg="12px"
-                  fillSvg="transparent"
-                  strokeSvg="#696969"
-                  el="repeat"
-                  alt="repeat"
-                  onClick={() => setRepeat(!repeat)}
-                />
-                <BarElement
-                  el="shuffle"
-                  widthSvg="19px"
-                  heightSvg="12px"
-                  fillSvg="transparent"
-                  strokeSvg="#696969"
-                  alt="shuffle"
-                  onClick={() => setShuffle(!shuffle)}
-                />
-              </Styled.BarControls>
-              <Styled.TrackPlay>
-                <TrackPlayContain />
-                <TrackPlayLike />
-              </Styled.TrackPlay>
-            </Styled.BarPlayer>
-            <Styled.BarVolumeBlock>
-              <Styled.VolumeWrapper>
-                <Styled.VolumeImageWrapper>
-                  <Styled.VolumeImage alt="volume">
-                    <use xlinkHref={`${sprite}#icon-dislike`} />
-                  </Styled.VolumeImage>
-                </Styled.VolumeImageWrapper>
-                <Styled.VolumeProgressBar>
-                  <Styled.VolumeProgressBarInput
-                    type="range"
-                    name="range"
-                    step="any"
-                    min="0"
-                    max="1"
-                    value={volume}
-                    onChange={(e) => setVolume(e.target.value)}
-                  />
-                </Styled.VolumeProgressBar>
-              </Styled.VolumeWrapper>
-            </Styled.BarVolumeBlock>
-          </Styled.BarPlayerBlock>
-        </Styled.BarContent>
-      </Styled.BarWrapper>
-    )
-  )
+              <LikeDislike
+                onLikeClick={handleAddFavorite}
+                onDislikeClick={handleRemoveFavorite}
+                isFavorite={favorite}
+              />
+            </div>
+          </div>
+          <Volume />
+        </div>
+      </div>
+    </div>
+  );
 }
-
-export default Bar

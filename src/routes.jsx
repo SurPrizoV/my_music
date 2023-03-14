@@ -1,37 +1,29 @@
-import React from 'react'
-import { Route, Routes, Navigate } from 'react-router-dom'
-import Login from './pages/auth/Login'
-import Registration from './pages/auth/Registration'
-import Home from './pages/home'
-import Favorites from './pages/favorites'
-import NotFound from './pages/not-found'
-import SelectionPlaylist from './pages/selections'
-import ProtectedRoute from './components/protected-route/ProtectedRoute'
-import * as Styled from './styles'
+import { Routes, Route } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import LoginScreen from './pages/login';
+import RegistrationScreen from './pages/registration';
+import MainTrackList from './pages/trackList';
+import PlayListIndi from './pages/playListIndi';
+import PlayListDay from './pages/playListDay';
+import PlayList100 from './pages/playList100';
+import MyTracks from './pages/myTracks';
+import ProtectedRoute from './components/protectedRoute/ProtectedRoute';
 
-function AppRoutes() {
+export default function AppRoutes() {
+  const { access } = useSelector((state) => state.user);
+
   return (
-    <div>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/registration" element={<Registration />} />
+    <Routes>
+      <Route path="/" element={<LoginScreen />} />
+      <Route path="/registration" element={<RegistrationScreen />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route
-            path="/"
-            element={
-              <Styled.Wrapper>
-                <Home />
-              </Styled.Wrapper>
-            }
-          />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/playlist/:id" element={<SelectionPlaylist />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
-  )
+      <Route element={<ProtectedRoute isAllowed={access} />}>
+        <Route path="/main" element={<MainTrackList />} />
+        <Route path="/my_tracks" element={<MyTracks />} />
+        <Route path="/playlist_day" element={<PlayListDay />} />
+        <Route path="/playlist_hundred" element={<PlayList100 />} />
+        <Route path="/playlist_indi" element={<PlayListIndi />} />
+      </Route>
+    </Routes>
+  );
 }
-
-export default AppRoutes

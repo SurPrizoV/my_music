@@ -9,6 +9,7 @@
     "prettier",
     "plugin:react/jsx-runtime"
   ],
+  "overrides": [],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
@@ -18,11 +19,9 @@
   },
   "plugins": ["react"],
   "rules": {
+    "import/prefer-default-export": "off",
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "react/prop-types": 0,
-    "react/destructuring-assignment": [0],
-    "no-unused-vars": "off",
-    "import/prefer-default-export": "off",
-    "no-undef": "off"
+    "react/destructuring-assignment": [0]
   }
 }
